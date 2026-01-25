@@ -40,6 +40,7 @@ def test_first_message():
     
     # Exact format from Problem Statement 6.1
     payload = {
+        "sessionId": "wertyu-dfghj-ertyui",
         "message": {
             "sender": "scammer",
             "text": "Your bank account will be blocked today. Verify immediately.",
@@ -80,6 +81,7 @@ def test_second_message():
     
     # Exact format from Problem Statement 6.2
     payload = {
+        "sessionId": "wertyu-dfghj-ertyui",
         "message": {
             "sender": "scammer",
             "text": "Share your UPI ID to avoid account suspension.",

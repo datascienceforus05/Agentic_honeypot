@@ -15,7 +15,7 @@ This is a production-ready, AI-powered **Agentic Honeypot API** designed to dete
 │                                                                              │
 │  ┌──────────────┐     ┌────────────────────┐     ┌───────────────────────┐  │
 │  │   Incoming   │────▶│   API Key Validator│────▶│   Scam Detection AI   │  │
-│  │   Request    │     │   (x-api-key)      │     │   (LLM/Rule-based)    │  │
+│  │   Request    │     │   (x-api-key)      │     │   (LLM/Groq/Rules)    │  │
 │  └──────────────┘     └────────────────────┘     └───────────────────────┘  │
 │         │                                                  │                 │
 │         │                                                  ▼                 │
@@ -34,110 +34,10 @@ This is a production-ready, AI-powered **Agentic Honeypot API** designed to dete
 │         ▼                                                  ▼                 │
 │  ┌────────────────────────────────────────────────────────────────────────┐ │
 │  │                         JSON Response                                   │ │
-│  │  { status, scamDetected, agentResponse, engagementMetrics,             │ │
+│  │  { status, scamDetected, engagementMetrics,                            │ │
 │  │    extractedIntelligence, agentNotes }                                  │ │
 │  └────────────────────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 🔄 Agentic Workflow (Step-by-Step)
-
-### Step 1: Request Reception & Validation
-- API receives POST request at `/api/v1/analyze`
-- Validates `x-api-key` header using constant-time comparison
-- Parses and validates request body using Pydantic models
-
-### Step 2: Intelligence Extraction
-- Extracts UPI IDs using regex with bank suffix validation
-- Identifies bank account numbers (9-18 digits) with context checking
-- Detects IFSC codes (pattern: `[A-Z]{4}0[A-Z0-9]{6}`)
-- Captures phishing links by checking suspicious TLDs and keywords
-
-### Step 3: AI-Powered Scam Detection
-- Constructs detection prompt with message and conversation history
-- Sends to LLM (OpenAI GPT / Google Gemini / Rule-based fallback)
-- Analyzes for scam patterns: lottery, KYC, financial, phishing, job scams
-- Returns confidence score, scam type, and risk level
-
-### Step 4: Autonomous Agent Activation (if scam detected)
-- Selects a believable Indian persona (name, age, occupation, traits)
-- Generates human-like Hinglish response using engagement strategies
-- Maintains naive persona to extract more intelligence
-- Never reveals detection or AI nature
-
-### Step 5: Response Generation
-- Calculates engagement metrics (duration, message count)
-- Compiles extracted intelligence
-- Generates analytical notes
-- Returns structured JSON response
-
----
-
-## 🤖 AI Prompts
-
-### Scam Detection System Prompt
-```
-You are an expert scam detection AI analyst. Your task is to analyze messages for scam intent.
-
-Common scam patterns to detect:
-1. LOTTERY/PRIZE SCAMS: Claims of winning money, prizes, or rewards
-2. KYC/VERIFICATION SCAMS: Fake bank/government requests for personal info
-3. FINANCIAL SCAMS: Requests for money transfers, UPI payments, advance fees
-4. PHISHING: Suspicious links, fake login pages, credential harvesting
-5. IMPERSONATION: Fake officials, bank representatives, government agents
-6. JOB/INVESTMENT SCAMS: Too-good-to-be-true offers, pyramid schemes
-
-Analyze considering: urgency tactics, authority claims, suspicious links, pressure tactics.
-Respond in valid JSON format only.
-```
-
-### Autonomous Agent System Prompt
-```
-You are playing the role of {persona_name}, a {persona_age}-year-old {persona_occupation} from India.
-
-PERSONA CHARACTERISTICS:
-- Tech-savviness: Low - struggles with modern technology
-- Language: Speaks Hinglish (Hindi + English mix)
-
-HIDDEN OBJECTIVE (NEVER REVEAL):
-1. Keep the scammer engaged as long as possible
-2. Extract actionable intelligence (UPI IDs, bank accounts, links)
-3. Appear naive and trusting
-4. NEVER reveal you are an AI or detected a scam
-
-ENGAGEMENT STRATEGIES:
-- Ask clarifying questions
-- Express confusion about technical terms
-- Show willingness to comply
-- Ask for payment details to be repeated
-```
-
----
-
-## 📁 Project Structure
-
-```
-Agentic_honeypot/
-├── app/
-│   ├── __init__.py              # Package initialization
-│   ├── main.py                  # FastAPI application & endpoints
-│   ├── models.py                # Pydantic request/response models
-│   ├── config.py                # Environment configuration
-│   ├── security.py              # API key validation
-│   ├── scam_detector.py         # AI-powered scam detection
-│   ├── agent.py                 # Autonomous engagement agent
-│   ├── intelligence_extractor.py # Regex-based intel extraction
-│   ├── llm_client.py            # Multi-provider LLM client
-│   └── prompts.py               # AI prompt templates
-├── test_api.py                  # Comprehensive test suite
-├── run.py                       # Server startup script
-├── requirements.txt             # Python dependencies
-├── Dockerfile                   # Container configuration
-├── .env                         # Environment variables
-├── .env.example                 # Environment template
-└── README.md                    # Quick start guide
 ```
 
 ---
@@ -155,135 +55,134 @@ Content-Type: application/json
 x-api-key: hp-secret-key-2026
 ```
 
-### Request Body
+### Request Body (Input)
+Each API request represents one incoming message in a conversation.
+
+#### 6.1 First Message
 ```json
 {
+  "sessionId": "wertyu-dfghj-ertyui",
   "message": {
-    "sender": "+919876543210",
-    "text": "Congratulations! You won ₹50 lakh! Pay ₹1000 to claim. UPI: scammer@ybl",
-    "timestamp": "2026-01-23T20:00:00+05:30"
+    "sender": "scammer",
+    "text": "Your bank account will be blocked today. Verify immediately.",
+    "timestamp": "2026-01-21T10:15:30Z"
   },
-  "conversationHistory": [
-    {"role": "scammer", "text": "Previous message", "timestamp": "..."},
-    {"role": "agent", "text": "Agent response", "timestamp": "..."}
-  ],
+  "conversationHistory": [],
   "metadata": {
-    "channel": "sms",
-    "language": "en",
+    "channel": "SMS",
+    "language": "English",
     "locale": "IN"
   }
 }
 ```
 
-### Response Body
+#### 6.2 Second Message (Follow-up)
+```json
+{
+  "sessionId": "wertyu-dfghj-ertyui",
+  "message": {
+    "sender": "scammer",
+    "text": "Share your UPI ID to avoid account suspension.",
+    "timestamp": "2026-01-21T10:17:10Z"
+  },
+  "conversationHistory": [
+    {
+      "sender": "scammer",
+      "text": "Your bank account will be blocked today. Verify immediately.",
+      "timestamp": "2026-01-21T10:15:30Z"
+    },
+    {
+      "sender": "user",
+      "text": "Why will my account be blocked?",
+      "timestamp": "2026-01-21T10:16:10Z"
+    }
+  ],
+  "metadata": {
+    "channel": "SMS",
+    "language": "English",
+    "locale": "IN"
+  }
+}
+```
+
+### Response Body (Output)
+Strictly matches Problem Statement Section 8.
+
 ```json
 {
   "status": "success",
   "scamDetected": true,
-  "agentResponse": "Arey wah! Main jeet gaya? Ye toh bahut acchi baat hai!",
   "engagementMetrics": {
-    "engagementDurationSeconds": 300,
-    "totalMessagesExchanged": 5
+    "engagementDurationSeconds": 420,
+    "totalMessagesExchanged": 18
   },
   "extractedIntelligence": {
-    "bankAccounts": ["12345678901234", "IFSC: SBIN0001234"],
-    "upiIds": ["scammer@ybl"],
-    "phishingLinks": ["https://fake-bank.xyz/login"]
+    "bankAccounts": ["XXXX-XXXX-XXXX"],
+    "upiIds": ["scammer@upi"],
+    "phishingLinks": ["http://malicious-link.example"]
   },
-  "agentNotes": "Lottery scam detected. Agent extracted UPI ID. Continuing engagement."
+  "agentNotes": "Scammer used urgency tactics and payment redirection"
 }
 ```
 
 ---
 
-## 🚀 Deployment Guide
+## 🔄 Agentic Workflow
 
-### Local Development
+### Step 1: Request Reception
+- API receives POST request
+- Validates `x-api-key`
+- Parses `sessionId`, `message`, and `conversationHistory`
+
+### Step 2: Intelligence Extraction
+- Extracts UPI IDs, Bank Accounts, and Phishing Links using Regex + Context analysis
+
+### Step 3: Scam Detection
+- Uses Groq (Llama 3 70B via `openai/gpt-oss-120b`) for high-speed analysis
+- Fallback to Rule-based detection if API unavailable
+- Detects intent: Lottery, KYC, Financial, Phishing
+
+### Step 4: Autonomous Agent
+- Activates if `scamDetected: true`
+- Adopts human-like persona (e.g., "Ramesh Kumar", elderly, tech-naive)
+- Engages scammer to extract more details (Account Numbers, UPI)
+- **Note:** Agent response is generated internally and stored in notes/logs, but not returned in the API response field as per Section 8 requirements.
+
+---
+
+## 📁 Project Structure
+
+```
+Agentic_honeypot/
+├── app/
+│   ├── main.py                  # FastAPI application
+│   ├── models.py                # Pydantic models (Input/Output Specs)
+│   ├── llm_client.py            # Groq / OpenAI / Gemini Client
+│   ├── ...
+├── requirements.txt
+├── Dockerfile
+└── README.md
+```
+
+---
+
+## 🚀 Deployment
+
+### Local Run
 ```bash
-# Create virtual environment
-python3 -m venv venv
 source venv/bin/activate
-
-# Install dependencies
 pip install -r requirements.txt
-
-# Configure environment
-cp .env.example .env
-# Edit .env with your API keys
-
-# Run server
 python run.py
 ```
+Server runs at `http://0.0.0.0:8000`
 
-### Docker Deployment
-```bash
-docker build -t honeypot-api .
-docker run -p 8000:8000 --env-file .env honeypot-api
-```
-
-### Production Deployment
-- Use `gunicorn` with `uvicorn` workers for production
-- Set `DEBUG=false` in environment
-- Configure proper API key
-- Enable HTTPS via reverse proxy (nginx)
+### Render / Cloud Deployment
+1. Push to GitHub
+2. Connect to Render Web Service
+3. Environment Variables:
+   - `GROQ_API_KEY`: `your_key_here`
+   - `HONEYPOT_API_KEY`: `hp-secret-key-2026`
 
 ---
 
-## ✅ Test Results
-
-```
-🧪 AGENTIC HONEYPOT API TEST SUITE
-
-✅ Health Check - PASSED
-✅ API Key Validation - PASSED
-✅ Lottery Scam Detection - PASSED
-✅ KYC Scam Detection - PASSED  
-✅ Multi-turn Conversation - PASSED
-✅ Safe Message (Non-Scam) - PASSED
-
-🎉 ALL TESTS PASSED!
-```
-
----
-
-## 🔒 Security Features
-
-1. **API Key Authentication** - Constant-time comparison prevents timing attacks
-2. **Input Validation** - Pydantic models enforce strict schemas
-3. **No Detection Disclosure** - Agent never reveals scam awareness
-4. **Ethical Boundaries** - No impersonation of real institutions
-5. **Stateless Design** - No persistent storage of sensitive data
-
----
-
-## 📊 Performance Characteristics
-
-- **Latency**: <100ms with rule-based fallback, <2s with LLM
-- **Throughput**: Handles concurrent requests via async FastAPI
-- **Reliability**: Graceful fallback when LLM unavailable
-- **Scalability**: Stateless design enables horizontal scaling
-
----
-
-## 🎯 Intelligence Extraction Capabilities
-
-| Type | Pattern | Validation |
-|------|---------|------------|
-| UPI IDs | `user@bankcode` | Known bank suffixes |
-| Bank Accounts | 9-18 digits | Context keywords |
-| IFSC Codes | `XXXX0XXXXXX` | Regex match |
-| Phishing Links | URLs | Suspicious TLDs/keywords |
-
----
-
-## 📝 Notes for Evaluation
-
-1. **No Hard-coded Classification** - Uses AI/rule-based analysis
-2. **Stateless API** - Conversation history provided in each request
-3. **Human-like Responses** - Hinglish persona with cultural authenticity
-4. **Production-Ready** - Error handling, logging, test coverage
-5. **Multi-LLM Support** - OpenAI, Gemini, or rule-based fallback
-
----
-
-**Built for Hackathon 2026** 🏆
+**Built for Problem Statement 2** 🏆

@@ -38,7 +38,9 @@ class Metadata(BaseModel):
 class HoneypotRequest(BaseModel):
     """
     Main request model - EXACTLY matches Problem Statement Section 6.
+    Includes sessionId, message, conversationHistory, and metadata.
     """
+    sessionId: Optional[str] = Field(None, description="Unique session ID for the conversation")
     message: Message = Field(..., description="The latest incoming message in the conversation")
     conversationHistory: List[ConversationMessage] = Field(
         default_factory=list, 
