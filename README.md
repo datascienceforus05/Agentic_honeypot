@@ -38,6 +38,7 @@ Content-Type: application/json
 ### First Message (6.1)
 ```json
 {
+  "sessionId": "wertyu-dfghj-ertyui",
   "message": {
     "sender": "scammer",
     "text": "Your bank account will be blocked today. Verify immediately.",
@@ -55,6 +56,7 @@ Content-Type: application/json
 ### Follow-up Message (6.2)
 ```json
 {
+  "sessionId": "wertyu-dfghj-ertyui",
   "message": {
     "sender": "scammer",
     "text": "Share your UPI ID to avoid account suspension.",
@@ -88,7 +90,6 @@ Content-Type: application/json
 {
   "status": "success",
   "scamDetected": true,
-  "agentResponse": "Acha ji? Ye toh bahut acchi baat hai!",
   "engagementMetrics": {
     "engagementDurationSeconds": 420,
     "totalMessagesExchanged": 18
@@ -125,10 +126,10 @@ Content-Type: application/json
 ## 🏗️ Architecture
 
 ```
-Request → API Key Validator → Scam Detector → Agent → Intelligence Extractor → Response
+Request → API Key Validator → Scam Detector (Groq AI) → Agent → Intelligence Extractor → Response
 ```
 
-- **Scam Detection**: AI-powered with rule-based fallback
+- **Scam Detection**: Groq (Llama-3-70B via gpt-oss-120b) + Rule-based fallback
 - **Agent**: Human-like Hinglish persona
 - **Intelligence Extraction**: Regex + contextual validation
 
@@ -143,7 +144,7 @@ Request → API Key Validator → Scam Detector → Agent → Intelligence Extra
 │   ├── scam_detector.py # AI scam detection
 │   ├── agent.py         # Autonomous engagement agent
 │   ├── intelligence_extractor.py
-│   ├── llm_client.py    # LLM providers + fallback
+│   ├── llm_client.py    # Groq / OpenAI / Gemini client
 │   └── prompts.py       # AI prompts
 ├── test_api.py          # Test suite
 ├── run.py               # Entry point
@@ -155,9 +156,11 @@ Request → API Key Validator → Scam Detector → Agent → Intelligence Extra
 ## 🔧 Configuration
 
 ```bash
-# For production - add LLM API key:
-OPENAI_API_KEY=sk-xxx  # or
-GOOGLE_API_KEY=xxx
+# For production - add API key:
+GROQ_API_KEY=gsk_...
+# Optional backends:
+# OPENAI_API_KEY=sk-...
+# GOOGLE_API_KEY=...
 ```
 
 ---
