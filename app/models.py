@@ -3,7 +3,7 @@ Pydantic models for request/response validation.
 Strictly adheres to the EXACT format from Problem Statement 2.
 """
 
-from typing import List, Optional
+from typing import List, Optional, Union
 from pydantic import BaseModel, Field
 
 
@@ -15,7 +15,7 @@ class Message(BaseModel):
     """Incoming message structure - matches 6.3 specification."""
     sender: str = Field(..., description="'scammer' or 'user'")
     text: str = Field(..., description="Message content")
-    timestamp: str = Field(..., description="ISO-8601 format timestamp")
+    timestamp: Union[str, int, float] = Field(..., description="ISO-8601 format timestamp or millisecond integer")
 
 
 class ConversationMessage(BaseModel):
@@ -25,7 +25,7 @@ class ConversationMessage(BaseModel):
     """
     sender: str = Field(..., description="'scammer' or 'user'")
     text: str = Field(..., description="Message content")
-    timestamp: Optional[str] = Field(None, description="ISO-8601 format timestamp")
+    timestamp: Optional[Union[str, int, float]] = Field(None, description="ISO-8601 format timestamp or millisecond integer")
 
 
 class Metadata(BaseModel):

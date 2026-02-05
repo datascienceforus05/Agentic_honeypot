@@ -205,6 +205,34 @@ def test_api_key_validation():
     print("✅ PASSED\n")
 
 
+def test_unix_timestamp():
+    """Test message with Unix timestamp (integer) - Fixes submission issue."""
+    print("=" * 60)
+    print("TEST: Unix Timestamp Input")
+    print("=" * 60)
+    
+    payload = {
+        "sessionId": "unix-ts-test",
+        "message": {
+            "sender": "scammer",
+            "text": "Unix timestamp test.",
+            "timestamp": 1769776085000  # 2026-01-30 in ms
+        },
+        "conversationHistory": [],
+        "metadata": {"channel": "SMS", "language": "English", "locale": "IN"}
+    }
+    
+    response = requests.post(f"{API_URL}/api/v1/analyze", headers=HEADERS, json=payload)
+    data = response.json()
+    
+    print(f"Status: {response.status_code}")
+    print(f"Response: {json.dumps(data, indent=2)}")
+    
+    assert response.status_code == 200
+    assert data["status"] == "success"
+    print("✅ PASSED\n")
+
+
 def test_response_format():
     """Verify response matches Section 8 format exactly."""
     print("=" * 60)
@@ -255,6 +283,7 @@ def main():
         test_api_key_validation()
         test_first_message()
         test_second_message()
+        test_unix_timestamp()
         test_intelligence_extraction()
         test_safe_message()
         test_response_format()

@@ -5,7 +5,7 @@ Agentic Honeypot API - Production Ready.
 
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -64,7 +64,7 @@ async def health_check():
     """Detailed health check."""
     return {
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "version": settings.API_VERSION
     }
 
@@ -101,11 +101,23 @@ async def analyze_message(
             try:
                 first_ts = request.conversationHistory[0].timestamp
                 current_ts = request.message.timestamp
-                if first_ts and current_ts:
-                    first_dt = datetime.fromisoformat(first_ts.replace('Z', '+00:00'))
-                    current_dt = datetime.fromisoformat(current_ts.replace('Z', '+00:00'))
+                
+                def parse_timestamp(ts):
+                    if isinstance(ts, (int, float)):
+                        # Assume milliseconds
+                        return datetime.fromtimestamp(ts / 1000.0, tz=timezone.utc)
+                    ts_str = str(ts).replace('Z', '+00:00')
+                    dt = datetime.fromisoformat(ts_str)
+                    if dt.tzinfo is None:
+                        dt = dt.replace(tzinfo=timezone.utc)
+                    return dt
+
+                if first_ts is not None and current_ts is not None:
+                    first_dt = parse_timestamp(first_ts)
+                    current_dt = parse_timestamp(current_ts)
                     duration_seconds = int((current_dt - first_dt).total_seconds())
-            except Exception:
+            except Exception as e:
+                logger.warning(f"Timestamp calculation failed: {e}")
                 duration_seconds = message_count * 30  # Estimate 30s per message
         
         # Step 4: Generate agent response if scam detected
