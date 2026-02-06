@@ -139,7 +139,7 @@ async def analyze_message(
         else:
             agent_notes = "Message analyzed. No scam indicators detected."
         
-        # Build response - EXACTLY matches Section 8 format
+        # Build response - EXACTLY matches Section 8 format + Hackathon 'reply' requirement
         response = HoneypotResponse(
             status="success",
             scamDetected=scam_analysis.is_scam,
@@ -148,7 +148,8 @@ async def analyze_message(
                 totalMessagesExchanged=message_count
             ),
             extractedIntelligence=intelligence,
-            agentNotes=agent_notes
+            agentNotes=agent_notes,
+            reply=agent_response  # Include the agent's response for the visualizer/tester
         )
         
         elapsed = time.time() - start_time

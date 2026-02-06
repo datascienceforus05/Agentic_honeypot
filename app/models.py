@@ -111,6 +111,10 @@ class HoneypotResponse(BaseModel):
         default="", 
         description="Agent notes about tactics observed (e.g., 'Scammer used urgency tactics')"
     )
+    reply: Optional[str] = Field(
+        default=None,
+        description="The agent's reply to the scammer (added for Hackathon tester compatibility)"
+    )
 
 
 # ============================================================================
